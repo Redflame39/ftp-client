@@ -38,6 +38,12 @@ public class Controller {
     private ListView<String> directoryContent;
 
     @FXML
+    private Button retrieveButton;
+
+    @FXML
+    private TextField storePathField;
+
+    @FXML
     void initialize() {
         remoteDirTree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<String>>() {
             @Override
@@ -60,6 +66,11 @@ public class Controller {
     @FXML
     void handleDisconnect(ActionEvent event) {
         ftpControl.disconnect();
+    }
+
+    @FXML
+    void handleRetrieve(ActionEvent event) {
+        System.out.println(getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()));
     }
 
     private void setRemoteDirTree() {
