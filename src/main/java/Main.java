@@ -1,17 +1,19 @@
-import java.io.IOException;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 
-public class Main {
+public class Main extends Application {
     public static void main(String[] args) {
-        proto_FtpClient ftp = new proto_FtpClient("localhost", 1, "redflame", "070218");
-        try {
-            ftp.open();
+        launch(args);
+    }
 
-            ftp.changeWorkingDirectory("folder1");
-            ftp.store("hello.txt");
-
-            ftp.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    @Override
+    public void start(Stage stage) throws Exception {
+        Parent root = FXMLLoader.load(getClass().getResource("/main.fxml"));
+        stage.setTitle("Hello World");
+        stage.setScene(new Scene(root, 800, 600));
+        stage.show();
     }
 }

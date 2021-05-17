@@ -24,7 +24,11 @@ public class proto_FtpClient {
         this.workingDirectory = "/";
     }
 
-    public void open() throws IOException {
+    public proto_FtpClient() {
+        this.workingDirectory = "/";
+    }
+
+    public void connect() throws IOException {
         ftp = new FTPClient();
 
         ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
@@ -36,14 +40,16 @@ public class proto_FtpClient {
             ftp.disconnect();
             throw new IOException("Exception in connecting to FTP Server");
         }
-
         ftp.login(user, password);
     }
 
-    public String[] ls() throws IOException {
-        return ftp.listNames();
+    public FTPFile[] listDirectories(String path) throws IOException {
+        return ftp.listDirectories(path);
     }
 
+    public FTPFile[] listFiles(String path) throws IOException {
+        return ftp.listFiles(path);
+    }
 
     public void changeWorkingDirectory(String dir) {
         this.workingDirectory = this.workingDirectory.concat(dir).concat("/");
