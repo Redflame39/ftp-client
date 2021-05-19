@@ -1,7 +1,9 @@
 import org.apache.commons.net.ftp.FTPFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class proto_Control {
     proto_FtpClient ftp;
@@ -38,16 +40,13 @@ public class proto_Control {
         return directories;
     }
 
-    public ArrayList<String> listFiles(String path) {
-        ArrayList<String> files = new ArrayList<>();
+    public ArrayList<FTPFile> listFiles(String path) {
         try {
-            for (FTPFile file : ftp.listFiles(path)) {
-                files.add(file.getName());
-            }
+            return new ArrayList<>(Arrays.asList(ftp.listFiles(path)));
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-        return files;
     }
 
     public void retrieve(String retrievePath, String storePath) {
@@ -55,6 +54,14 @@ public class proto_Control {
             ftp.retrieve(retrievePath, storePath);
         } catch (IOException e) {
             System.err.println("Cannot retrieve file from " + retrievePath + " (" + e.getLocalizedMessage() + ")");
+        }
+    }
+
+    public void store(File toStore, String storePath) {
+        try {
+            ftp.store(toStore, storePath);
+        } catch (IOException e) {
+            System.err.println("Can not upload file to FTP: " + storePath);
         }
     }
 }

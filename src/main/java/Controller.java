@@ -1,21 +1,31 @@
-import java.net.URL;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ResourceBundle;
 
+import com.sun.javafx.scene.control.LabeledText;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.skin.ListViewSkin;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.FileChooser;
+import org.apache.commons.net.ftp.FTPFile;
 
 public class Controller {
 
+    private final Image DIRECTORY_ICON = new Image("/directory.png");
+    private final Image FILE_ICON = new Image("/file.png");
+    private final Image UNKNOWN_ICON = new Image("/unknown.png");
+
     private proto_Control ftpControl;
-    private final String DEFAULT_SAVE_PATH = "C:/ftp_retrieved_files";
+    private final String DEFAULT_SAVE_PATH = "C:\\Users\\" + System.getProperty("user.name") + "\\Downloads";
 
     @FXML
     private TextField hostField;
@@ -45,12 +55,39 @@ public class Controller {
     private TextField storePathField;
 
     @FXML
+    private Button storeButton;
+
+    @FXML
     void initialize() {
         remoteDirTree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<String>>() {
             @Override
             public void changed(ObservableValue<? extends TreeItem<String>> observableValue, TreeItem<String> stringTreeItem, TreeItem<String> t1) {
 
                 updateDirectoryContentList(t1);
+            }
+        });
+        directoryContent.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY && mouseEvent.getClickCount() == 2) {
+                    proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
+                    if (selected == null)
+                        return;
+                    if (selected.getName().equals("..")) {
+                        TreeItem<String> parent = remoteDirTree.getSelectionModel().getSelectedItem().getParent();
+                        if (parent == null)
+                            return;
+                        updateDirectoryContentList(parent);
+                        remoteDirTree.getSelectionModel().select(parent);
+                    } else {
+                        remoteDirTree.getSelectionModel().getSelectedItem().getChildren().forEach(item -> {
+                            if (item.getValue().equals(selected.getName())) {
+                                updateDirectoryContentList(item);
+                                remoteDirTree.getSelectionModel().select(item);
+                            }
+                        });
+                    }
+                }
             }
         });
     }
@@ -79,7 +116,24 @@ public class Controller {
     void handleRetrieve(ActionEvent event) {
         proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
         if (ftpControl != null && selected != null) {
-            ftpControl.retrieve(selected.getFullPath(), storePathField.getText());
+            ftpControl.retrieve(selected.getFullPath(), storePathField.getText() + "/" + selected.getName());
+        }
+    }
+
+    @FXML
+    void handleStore(ActionEvent event) {
+        if (!fieldsNotEmpty()) {
+            //TODO alert "fields must not be empty"
+            return;
+        }
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Choose file to store");
+        FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("All Files", "*");
+        fileChooser.getExtensionFilters().add(extensionFilter);
+        File file = fileChooser.showOpenDialog(Main.primaryStage);
+        if (file != null) {
+            ftpControl.store(file, getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()));
+            updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
         }
     }
 
@@ -103,11 +157,14 @@ public class Controller {
         directoryContent.getItems().clear();
         ArrayList<proto_RemoteFile> content = new ArrayList<>();
         String fullPath = getFullPath(selected);
-        ArrayList<String> names = ftpControl.listFiles(fullPath);
-        for (String child : names) {
-            proto_RemoteFile remoteFile = new proto_RemoteFile(child, fullPath.concat(child));
+        ArrayList<FTPFile> files = ftpControl.listFiles(fullPath);
+        for (FTPFile file : files) {
+            proto_RemoteFile remoteFile = new proto_RemoteFile(file, fullPath.concat(file.getName()));
             content.add(remoteFile);
         }
+        proto_RemoteFile linkBack = new proto_RemoteFile();
+        linkBack.setName("..");
+        directoryContent.getItems().add(linkBack);
         directoryContent.getItems().addAll(content);
     }
 

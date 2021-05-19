@@ -1,15 +1,18 @@
+import org.apache.commons.net.ftp.FTPFile;
+
 import java.util.Objects;
 
 public class proto_RemoteFile {
     private String name;
     private String fullPath;
+    private FTPFile file;
 
     public proto_RemoteFile() {
 
     }
 
-    public proto_RemoteFile(String name, String fullPath) {
-        this.name = name;
+    public proto_RemoteFile(FTPFile file, String fullPath) {
+        this.name = file.getName();
         this.fullPath = fullPath;
     }
 
@@ -27,6 +30,14 @@ public class proto_RemoteFile {
 
     public void setFullPath(String fullPath) {
         this.fullPath = fullPath;
+    }
+
+    public FTPFile getFile() {
+        return file;
+    }
+
+    public void setFile(FTPFile file) {
+        this.file = file;
     }
 
     @Override

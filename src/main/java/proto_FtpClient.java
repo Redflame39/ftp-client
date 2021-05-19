@@ -79,10 +79,9 @@ public class proto_FtpClient {
         }
     }
 
-    public void store(String localName) throws IOException {
-        InputStream inputStream = new FileInputStream(localName);
-        String fullPath = workingDirectory.concat(localName);
-        OutputStream outputStream = ftp.storeFileStream(fullPath);
+    public void store(File toStore, String storePath) throws IOException {
+        InputStream inputStream = new FileInputStream(toStore);
+        OutputStream outputStream = ftp.storeFileStream(storePath + toStore.getName());
         if (Objects.isNull(outputStream)) {
             throw new IOException(ftp.getReplyString());
         }
@@ -96,9 +95,9 @@ public class proto_FtpClient {
         outputStream.close();
         boolean completed = this.ftp.completePendingCommand();
         if (completed) {
-            System.out.println("Uploaded file to FTP: " + localName);
+            System.out.println("Uploaded file to FTP: " + storePath);
         } else {
-            throw new IOException("Can not upload file to FTP: " + localName);
+            throw new IOException("Can not upload file to FTP: " + storePath);
         }
     }
 
