@@ -15,6 +15,7 @@ import javafx.scene.input.MouseEvent;
 public class Controller {
 
     private proto_Control ftpControl;
+    private final String DEFAULT_SAVE_PATH = "C:/ftp_retrieved_files";
 
     @FXML
     private TextField hostField;
@@ -35,7 +36,7 @@ public class Controller {
     private TreeView<String> remoteDirTree;
 
     @FXML
-    private ListView<String> directoryContent;
+    private ListView<proto_RemoteFile> directoryContent;
 
     @FXML
     private Button retrieveButton;
@@ -49,28 +50,37 @@ public class Controller {
             @Override
             public void changed(ObservableValue<? extends TreeItem<String>> observableValue, TreeItem<String> stringTreeItem, TreeItem<String> t1) {
 
-                updateDirectoryContentList(getFullPath(t1));
+                updateDirectoryContentList(t1);
             }
         });
     }
 
     @FXML
     private void handleConnect(ActionEvent event) {
+        if (!fieldsNotEmpty()) {
+            //TODO alert "fields must not be empty"
+            return;
+        }
         ftpControl = new proto_Control(hostField.getText(),
                 usernameField.getText(),
                 passwordField.getText());
         ftpControl.connect();
         setRemoteDirTree();
+        storePathField.setText(DEFAULT_SAVE_PATH);
     }
 
     @FXML
     void handleDisconnect(ActionEvent event) {
-        ftpControl.disconnect();
+        if (ftpControl != null)
+            ftpControl.disconnect();
     }
 
     @FXML
     void handleRetrieve(ActionEvent event) {
-        System.out.println(getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()));
+        proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
+        if (ftpControl != null && selected != null) {
+            ftpControl.retrieve(selected.getFullPath(), storePathField.getText());
+        }
     }
 
     private void setRemoteDirTree() {
@@ -89,10 +99,16 @@ public class Controller {
         }
     }
 
-    private void updateDirectoryContentList(String selectedDirectory) {
+    private void updateDirectoryContentList(TreeItem<String> selected) {
         directoryContent.getItems().clear();
-        directoryContent.getItems().addAll(ftpControl.listFiles(selectedDirectory));
-        //directoryContent.getItems().addAll(ftpControl.listDirectories(selectedDirectory));
+        ArrayList<proto_RemoteFile> content = new ArrayList<>();
+        String fullPath = getFullPath(selected);
+        ArrayList<String> names = ftpControl.listFiles(fullPath);
+        for (String child : names) {
+            proto_RemoteFile remoteFile = new proto_RemoteFile(child, fullPath.concat(child));
+            content.add(remoteFile);
+        }
+        directoryContent.getItems().addAll(content);
     }
 
     private String getFullPath(final TreeItem<String> children) {
@@ -109,6 +125,12 @@ public class Controller {
             result.append("/");
         }
         return result.toString();
+    }
+
+    private boolean fieldsNotEmpty() {
+        return !hostField.getText().isEmpty()
+                && !usernameField.getText().isEmpty()
+                && !passwordField.getText().isEmpty();
     }
 
 }

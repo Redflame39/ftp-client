@@ -60,23 +60,22 @@ public class proto_FtpClient {
     }
 
 
-    public void retrieve(String name) throws IOException {
-        String fullPath = workingDirectory.concat(name);
-        InputStream in = ftp.retrieveFileStream(fullPath);
+    public void retrieve(String retrievePath, String storePath) throws IOException {
+        InputStream in = ftp.retrieveFileStream(retrievePath);
         /*if(!FTPReply.isPositiveIntermediate(ftp.getReplyCode())) {
             close();
             throw new IOException(ftp.getReplyString());
         }*/
-        OutputStream out = new FileOutputStream(name);
+        OutputStream out = new FileOutputStream(storePath);
         out.write(in.readAllBytes());
         out.flush();
         in.close();
         out.close();
         boolean completed = this.ftp.completePendingCommand();
         if (completed) {
-            System.out.println("Downloaded file from FTP: " + name);
+            System.out.println("Downloaded file from FTP: " + retrievePath);
         } else {
-            throw new IOException("Can not download file from FTP: " + name);
+            throw new IOException("Can not download file from FTP: " + retrievePath);
         }
     }
 

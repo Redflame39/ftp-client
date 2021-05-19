@@ -2,9 +2,6 @@ import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class proto_Control {
     proto_FtpClient ftp;
@@ -51,5 +48,13 @@ public class proto_Control {
             e.printStackTrace();
         }
         return files;
+    }
+
+    public void retrieve(String retrievePath, String storePath) {
+        try {
+            ftp.retrieve(retrievePath, storePath);
+        } catch (IOException e) {
+            System.err.println("Cannot retrieve file from " + retrievePath + " (" + e.getLocalizedMessage() + ")");
+        }
     }
 }
