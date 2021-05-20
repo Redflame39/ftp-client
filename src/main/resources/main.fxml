@@ -19,5 +19,6 @@
       <Button fx:id="retrieveButton" layoutX="340.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleRetrieve" text="Retrieve" />
       <TextField fx:id="storePathField" layoutX="15.0" layoutY="56.0" prefHeight="26.0" prefWidth="546.0" promptText="Path to store" />
       <Button fx:id="storeButton" layoutX="415.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStore" text="Store" />
+      <Button fx:id="deleteButton" layoutX="475.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
    </children>
 </AnchorPane>

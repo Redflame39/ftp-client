@@ -61,7 +61,25 @@ public class proto_Control {
         try {
             ftp.store(toStore, storePath);
         } catch (IOException e) {
-            System.err.println("Can not upload file to FTP: " + storePath);
+            System.err.println("Cannot upload file to FTP: " + storePath);
+        }
+    }
+
+    public boolean deleteFile(String path) {
+        try {
+            return ftp.deleteFile(path);
+        } catch (IOException e) {
+            System.err.println("Cannot delete file from FTP: " + path);
+            return false;
+        }
+    }
+
+    public boolean deleteDirectory(String path) {
+        try {
+            return ftp.deleteDirectory(path);
+        } catch (IOException e) {
+            System.err.println("Cannot delete directory from FTP: " + path);
+            return false;
         }
     }
 }

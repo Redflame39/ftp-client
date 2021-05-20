@@ -101,6 +101,14 @@ public class proto_FtpClient {
         }
     }
 
+    public boolean deleteFile(String path) throws IOException {
+        return ftp.deleteFile(path);
+    }
+
+    public boolean deleteDirectory(String path) throws IOException {
+        return ftp.removeDirectory(path);
+    }
+
     public void close() throws IOException {
         ftp.logout();
         ftp.disconnect();

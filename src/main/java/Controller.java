@@ -3,16 +3,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import com.sun.javafx.scene.control.LabeledText;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.skin.ListViewSkin;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
@@ -56,6 +53,9 @@ public class Controller {
 
     @FXML
     private Button storeButton;
+
+    @FXML
+    private Button deleteButton;
 
     @FXML
     void initialize() {
@@ -135,6 +135,33 @@ public class Controller {
             ftpControl.store(file, getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()));
             updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
         }
+    }
+
+    @FXML
+    void handleDelete(ActionEvent event) {
+        proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
+        switch (selected.getFile().getType()) {
+            case FTPFile.FILE_TYPE: {
+                if (ftpControl.deleteFile(selected.getFullPath())) {
+                    directoryContent.getItems().removeIf(
+                            proto_remoteFile -> proto_remoteFile.getName().equals(selected.getName()));
+                } else {
+                    //TODO alert "file not deleted"
+                }
+                break;
+            }
+            case FTPFile.DIRECTORY_TYPE: {
+                if (ftpControl.deleteDirectory(selected.getFullPath())) {
+                    directoryContent.getItems().removeIf(
+                            proto_remoteFile -> proto_remoteFile.getName().equals(selected.getName()));
+                    remoteDirTree.getSelectionModel().getSelectedItem().getChildren().removeIf(
+                            directory -> directory.getValue().equals(selected.getName()));
+                } else {
+                    //TODO alert "file not deleted"
+                }
+            }
+        }
+
     }
 
     private void setRemoteDirTree() {

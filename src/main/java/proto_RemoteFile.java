@@ -12,6 +12,7 @@ public class proto_RemoteFile {
     }
 
     public proto_RemoteFile(FTPFile file, String fullPath) {
+        this.file = file;
         this.name = file.getName();
         this.fullPath = fullPath;
     }
