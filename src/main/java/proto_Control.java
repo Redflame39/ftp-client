@@ -1,9 +1,13 @@
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class proto_Control {
     proto_FtpClient ftp;
@@ -57,11 +61,74 @@ public class proto_Control {
         }
     }
 
+    public void retrieveDirectory(String retrievePath, String storePath) {
+        try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(storePath))) {
+            retrieveFilesForFolder(retrievePath, out);
+        } catch (IOException e) {
+            System.err.println("Cannot retrieve directory " + retrievePath  + " to " + storePath);
+        }
+    }
+
+    private void zipFile(String fileName, ZipOutputStream zipOut) throws IOException {
+        for (FTPFile childFile : ftp.listFiles(fileName)) {
+            if (childFile.isDirectory()) {
+                if (fileName.endsWith("/")) {
+                    zipOut.putNextEntry(new ZipEntry(fileName + childFile.getName()));
+                } else {
+                    zipOut.putNextEntry(new ZipEntry(fileName + "/" + childFile.getName()));
+                }
+                zipOut.closeEntry();
+                zipFile(fileName + "/" + childFile.getName(), zipOut);
+                return;
+            }
+            ZipEntry zipEntry = new ZipEntry(fileName + "/" + childFile.getName());
+            zipOut.putNextEntry(zipEntry);
+            zipOut.write(ftp.retrieve(fileName + "/" + childFile.getName()).readAllBytes());
+            zipOut.closeEntry();
+        }
+    }
+
+    private void retrieveFilesForFolder(String fileName, ZipOutputStream zipOut) throws IOException {
+        for (final FTPFile fileEntry : ftp.listFiles(fileName)) {
+            if (fileEntry.isDirectory()) {
+                ZipEntry zipEntry = new ZipEntry(fileName + "/" + fileEntry.getName());
+                zipOut.putNextEntry(zipEntry);
+                zipOut.closeEntry();
+                retrieveFilesForFolder(fileName + "/" + fileEntry.getName(), zipOut);
+            } else {
+                ZipEntry zipEntry = new ZipEntry(fileName + "/" + fileEntry.getName());
+                zipOut.putNextEntry(zipEntry);
+                zipOut.write(ftp.retrieve(fileName + "/" + fileEntry.getName()).readAllBytes());
+                zipOut.closeEntry();
+            }
+        }
+    }
+
     public void store(File toStore, String storePath) {
         try {
             ftp.store(toStore, storePath);
         } catch (IOException e) {
             System.err.println("Cannot upload file to FTP: " + storePath);
+        }
+    }
+
+    public void storeDirectory(File dir, String storePath) {
+        try {
+            ftp.makeDirectory(storePath);
+            storeFilesForFolder(dir, storePath);
+        } catch (IOException e) {
+            System.err.println("Cannot make directory " + storePath);
+        }
+    }
+
+    private void storeFilesForFolder(final File folder, String path) throws IOException {
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                ftp.makeDirectory(path + "/" + fileEntry.getName());
+                storeFilesForFolder(fileEntry, path + "/" + fileEntry.getName());
+            } else {
+                ftp.store(fileEntry, path + "/");
+            }
         }
     }
 

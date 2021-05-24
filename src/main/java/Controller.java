@@ -1,4 +1,6 @@
 import java.io.File;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,8 +14,10 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ntp.TimeStamp;
 
 public class Controller {
 
@@ -52,10 +56,13 @@ public class Controller {
     private TextField storePathField;
 
     @FXML
-    private Button storeButton;
+    private Button storeFileButton;
 
     @FXML
     private Button deleteButton;
+
+    @FXML
+    private Button storeDirectoryButton;
 
     @FXML
     void initialize() {
@@ -115,13 +122,21 @@ public class Controller {
     @FXML
     void handleRetrieve(ActionEvent event) {
         proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
-        if (ftpControl != null && selected != null) {
-            ftpControl.retrieve(selected.getFullPath(), storePathField.getText() + "/" + selected.getName());
+        if (ftpControl != null && selected != null && !selected.getName().equals("..")) {
+            if (!selected.getFile().isDirectory()) {
+                ftpControl.retrieve(selected.getFullPath(), storePathField.getText() + "/" + selected.getName());
+            }
+            else {
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                ftpControl.retrieveDirectory(selected.getFullPath(),
+                        storePathField.getText() + "\\" + selected.getName()
+                                + "_" + timestamp.toString().replaceAll("[^0-9]", "") + ".zip");
+            }
         }
     }
 
     @FXML
-    void handleStore(ActionEvent event) {
+    void handleStoreFile(ActionEvent event) {
         if (!fieldsNotEmpty()) {
             //TODO alert "fields must not be empty"
             return;
@@ -138,7 +153,27 @@ public class Controller {
     }
 
     @FXML
+    void handleStoreDirectory(ActionEvent event) {
+        if (!fieldsNotEmpty()) {
+            //TODO alert "fields must not be empty"
+            return;
+        }
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        directoryChooser.setTitle("Choose file to store");
+        File file = directoryChooser.showDialog(Main.primaryStage);
+        if (file != null) {
+            ftpControl.storeDirectory(file,
+                    getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()) + file.getName());
+            updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
+        }
+    }
+
+    @FXML
     void handleDelete(ActionEvent event) {
+        if (directoryContent.getSelectionModel().getSelectedItem() == null) {
+            //TODO alert
+            return;
+        }
         proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
         switch (selected.getFile().getType()) {
             case FTPFile.FILE_TYPE: {

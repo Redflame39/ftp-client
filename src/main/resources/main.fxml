@@ -18,7 +18,8 @@
       <ListView fx:id="directoryContent" layoutX="340.0" layoutY="100.0" prefHeight="208.0" prefWidth="220.0" />
       <Button fx:id="retrieveButton" layoutX="340.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleRetrieve" text="Retrieve" />
       <TextField fx:id="storePathField" layoutX="15.0" layoutY="56.0" prefHeight="26.0" prefWidth="546.0" promptText="Path to store" />
-      <Button fx:id="storeButton" layoutX="415.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStore" text="Store" />
-      <Button fx:id="deleteButton" layoutX="475.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
+      <Button fx:id="storeFileButton" layoutX="415.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStoreFile" text="Store file" />
+      <Button fx:id="deleteButton" layoutX="597.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
+      <Button fx:id="storeDirectoryButton" layoutX="490.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStoreDirectory" text="Store directory" />
    </children>
 </AnchorPane>

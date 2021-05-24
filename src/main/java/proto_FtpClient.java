@@ -24,10 +24,6 @@ public class proto_FtpClient {
         this.workingDirectory = "/";
     }
 
-    public proto_FtpClient() {
-        this.workingDirectory = "/";
-    }
-
     public void connect() throws IOException {
         ftp = new FTPClient();
 
@@ -59,7 +55,6 @@ public class proto_FtpClient {
         return workingDirectory;
     }
 
-
     public void retrieve(String retrievePath, String storePath) throws IOException {
         InputStream in = ftp.retrieveFileStream(retrievePath);
         /*if(!FTPReply.isPositiveIntermediate(ftp.getReplyCode())) {
@@ -74,6 +69,21 @@ public class proto_FtpClient {
         boolean completed = this.ftp.completePendingCommand();
         if (completed) {
             System.out.println("Downloaded file from FTP: " + retrievePath);
+        } else {
+            throw new IOException("Can not download file from FTP: " + retrievePath);
+        }
+    }
+
+    public InputStream retrieve(String retrievePath) throws IOException {
+        InputStream in = ftp.retrieveFileStream(retrievePath);
+        /*if(!FTPReply.isPositiveIntermediate(ftp.getReplyCode())) {
+            close();
+            throw new IOException(ftp.getReplyString());
+        }*/
+        boolean completed = this.ftp.completePendingCommand();
+        if (completed) {
+            System.out.println("Downloaded file from FTP: " + retrievePath);
+            return in;
         } else {
             throw new IOException("Can not download file from FTP: " + retrievePath);
         }
@@ -103,6 +113,10 @@ public class proto_FtpClient {
 
     public boolean deleteFile(String path) throws IOException {
         return ftp.deleteFile(path);
+    }
+
+    public boolean makeDirectory(String path) throws IOException {
+        return ftp.makeDirectory(path);
     }
 
     public boolean deleteDirectory(String path) throws IOException {
