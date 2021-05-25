@@ -91,7 +91,7 @@ public class proto_Control {
     private void retrieveFilesForFolder(String fileName, ZipOutputStream zipOut) throws IOException {
         for (final FTPFile fileEntry : ftp.listFiles(fileName)) {
             if (fileEntry.isDirectory()) {
-                ZipEntry zipEntry = new ZipEntry(fileName + "/" + fileEntry.getName());
+                ZipEntry zipEntry = new ZipEntry(fileName + "/" + fileEntry.getName() + "/");
                 zipOut.putNextEntry(zipEntry);
                 zipOut.closeEntry();
                 retrieveFilesForFolder(fileName + "/" + fileEntry.getName(), zipOut);
