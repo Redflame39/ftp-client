@@ -148,6 +148,7 @@ public class Controller {
         File file = fileChooser.showOpenDialog(Main.primaryStage);
         if (file != null) {
             ftpControl.store(file, getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()));
+
             updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
         }
     }
@@ -165,6 +166,7 @@ public class Controller {
             ftpControl.storeDirectory(file,
                     getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()) + file.getName());
             updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
+            setRemoteDirTree();
         }
     }
 

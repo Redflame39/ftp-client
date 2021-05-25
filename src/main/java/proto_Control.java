@@ -69,25 +69,6 @@ public class proto_Control {
         }
     }
 
-    private void zipFile(String fileName, ZipOutputStream zipOut) throws IOException {
-        for (FTPFile childFile : ftp.listFiles(fileName)) {
-            if (childFile.isDirectory()) {
-                if (fileName.endsWith("/")) {
-                    zipOut.putNextEntry(new ZipEntry(fileName + childFile.getName()));
-                } else {
-                    zipOut.putNextEntry(new ZipEntry(fileName + "/" + childFile.getName()));
-                }
-                zipOut.closeEntry();
-                zipFile(fileName + "/" + childFile.getName(), zipOut);
-                return;
-            }
-            ZipEntry zipEntry = new ZipEntry(fileName + "/" + childFile.getName());
-            zipOut.putNextEntry(zipEntry);
-            zipOut.write(ftp.retrieve(fileName + "/" + childFile.getName()).readAllBytes());
-            zipOut.closeEntry();
-        }
-    }
-
     private void retrieveFilesForFolder(String fileName, ZipOutputStream zipOut) throws IOException {
         for (final FTPFile fileEntry : ftp.listFiles(fileName)) {
             if (fileEntry.isDirectory()) {

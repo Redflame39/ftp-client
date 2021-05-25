@@ -90,6 +90,9 @@ public class proto_FtpClient {
     }
 
     public void store(File toStore, String storePath) throws IOException {
+        if (!ftp.allocate(toStore.length())) {
+            throw new IOException("Not enough space on server");
+        }
         InputStream inputStream = new FileInputStream(toStore);
         OutputStream outputStream = ftp.storeFileStream(storePath + toStore.getName());
         if (Objects.isNull(outputStream)) {
