@@ -105,7 +105,7 @@ public class Controller {
     @FXML
     private void handleConnect(ActionEvent event) {
         if (!fieldsNotEmpty()) {
-            //TODO alert "fields must not be empty"
+            AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
             return;
         }
         ftpControl = new proto_Control(hostField.getText(),
@@ -141,7 +141,7 @@ public class Controller {
     @FXML
     void handleStoreFile(ActionEvent event) {
         if (!fieldsNotEmpty()) {
-            //TODO alert "fields must not be empty"
+            AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
             return;
         }
         FileChooser fileChooser = new FileChooser();
@@ -159,7 +159,7 @@ public class Controller {
     @FXML
     void handleStoreDirectory(ActionEvent event) {
         if (!fieldsNotEmpty()) {
-            //TODO alert "fields must not be empty"
+            AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
             return;
         }
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -176,7 +176,7 @@ public class Controller {
     @FXML
     void handleDelete(ActionEvent event) {
         if (directoryContent.getSelectionModel().getSelectedItem() == null) {
-            //TODO alert
+            AlertController.showAlert("Select item to delete", Alert.AlertType.INFORMATION);
             return;
         }
         proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
@@ -186,7 +186,7 @@ public class Controller {
                     directoryContent.getItems().removeIf(
                             proto_remoteFile -> proto_remoteFile.getName().equals(selected.getName()));
                 } else {
-                    //TODO alert "file not deleted"
+                    AlertController.showAlert("File not deleted", Alert.AlertType.ERROR);
                 }
                 break;
             }
@@ -197,7 +197,7 @@ public class Controller {
                     remoteDirTree.getSelectionModel().getSelectedItem().getChildren().removeIf(
                             directory -> directory.getValue().equals(selected.getName()));
                 } else {
-                    //TODO alert "file not deleted"
+                    AlertController.showAlert("File not deleted", Alert.AlertType.ERROR);
                 }
             }
         }
