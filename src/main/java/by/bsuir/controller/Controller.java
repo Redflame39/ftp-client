@@ -1,10 +1,12 @@
+package by.bsuir.controller;
+
 import java.io.File;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import by.bsuir.Main;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -17,7 +19,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ntp.TimeStamp;
+
+import by.bsuir.ftp.*;
 
 public class Controller {
 

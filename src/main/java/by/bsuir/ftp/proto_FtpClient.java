@@ -1,11 +1,11 @@
+package by.bsuir.ftp;
+
 import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.commons.net.io.Util;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class proto_FtpClient {

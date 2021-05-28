@@ -1,7 +1,9 @@
+package by.bsuir.ftp;
+
+import by.bsuir.ftp.proto_FtpClient;
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,3 +1,5 @@
+package by.bsuir.ftp;
+
 import org.apache.commons.net.ftp.FTPFile;
 
 import java.util.Objects;
