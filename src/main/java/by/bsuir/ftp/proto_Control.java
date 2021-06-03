@@ -153,4 +153,32 @@ public class proto_Control {
             System.err.println("Cannot create directory " + path);
         }
     }
+
+    public int lastReply() {
+        return ftp.lastReply();
+    }
+
+    public void setPassiveMode() {
+        try {
+            ftp.close();
+            ftp.setPassiveWorkMode();
+            ftp.connect();
+        } catch (IOException e) {
+            System.err.println("Error while switching between data modes");
+        }
+    }
+
+    public void setActiveMode() {
+        try {
+            ftp.close();
+            ftp.setActiveWorkMode();
+            ftp.connect();
+        } catch (IOException e) {
+            System.err.println("Error while switching between data modes");
+        }
+    }
+
+    public boolean isPassiveWorkMode() {
+        return ftp.isPassiveWorkMode();
+    }
 }

@@ -27,10 +27,8 @@ public class Controller {
 
     private proto_Control ftpControl;
     private boolean connectedToServer = false;
+    private boolean passiveWorkMode;
     private final String DEFAULT_SAVE_PATH = "C:\\Users\\" + System.getProperty("user.name") + "\\Downloads";
-    private final Image DIRECTORY_ICON = new Image("/directory.png");
-    private final Image FILE_ICON = new Image("/file.png");
-    private final Image UNKNOWN_ICON = new Image("/unknown.png");
 
     @FXML
     private TextField hostField;
@@ -72,6 +70,9 @@ public class Controller {
     private Button createFolderButton;
 
     @FXML
+    private ComboBox<String> clientModeBox;
+
+    @FXML
     void initialize() {
         remoteDirTree.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TreeItem<String>>() {
             @Override
@@ -104,10 +105,32 @@ public class Controller {
                 }
             }
         });
+        clientModeBox.getItems().addAll("Passive", "Active");
+        clientModeBox.getSelectionModel().select("Passive");
+        clientModeBox.valueProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if (clientModeBox.getValue().equals("Passive")) {
+                    if (passiveWorkMode) {
+                        AlertController.showAlert("Client already work in passive mode!", Alert.AlertType.INFORMATION);
+                        return;
+                    }
+                    ftpControl.setPassiveMode();
+                    passiveWorkMode = true;
+                } else {
+                    if (!passiveWorkMode) {
+                        AlertController.showAlert("Client already work in active mode!", Alert.AlertType.INFORMATION);
+                        return;
+                    }
+                    ftpControl.setActiveMode();
+                    passiveWorkMode = false;
+                }
+            }
+        });
     }
 
     @FXML
-    private void handleConnect(ActionEvent event) {
+    private void handleConnect() {
         if (!fieldsNotEmpty()) {
             AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
             return;
@@ -124,6 +147,7 @@ public class Controller {
         if (successfullyConnected) {
             setRemoteDirTree();
             connectedToServer = true;
+            passiveWorkMode = ftpControl.isPassiveWorkMode();
         } else {
             AlertController.showAlert(
                     "Cannot connect to server " + hostField.getText() + ":" + portField.getText(),
@@ -168,6 +192,11 @@ public class Controller {
                         DEFAULT_SAVE_PATH + "\\" + selected.getName()
                                 + "_" + timestamp.toString().replaceAll("[^0-9]", "") + ".zip");
                 if (!successfully) {
+                    if (ftpControl.lastReply() == 426) {
+                        System.out.println("Trying to restore connection with ftp");
+                        handleConnect();
+                        System.out.println("Connection to server has been restored");
+                    }
                     AlertController.showAlert("Cannot retrieve directory from server!", Alert.AlertType.ERROR);
                 }
             }
@@ -254,8 +283,11 @@ public class Controller {
             return;
         }
         String newFolderName = AlertController.textDialog("Specify the folder name", "New folder name: ");
-        ftpControl.makeDirectory(remoteDirTree.getSelectionModel().getSelectedItem().getValue() + "/" + newFolderName);
-        updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
+        if (newFolderName == null) {
+            return;
+        }
+        ftpControl.makeDirectory(getFullPath(remoteDirTree.getSelectionModel().getSelectedItem()) + "/" + newFolderName);
+        //updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
         setRemoteDirTree();
     }
 
@@ -271,7 +303,7 @@ public class Controller {
         for (String child : listChilds) {
             TreeItem<String> childNode = new TreeItem<>(child);
             parentNode.getChildren().add(childNode);
-            setChilds(childNode, parentNode.getValue().concat("/").concat(child));
+            setChilds(childNode, parentRoot.concat("/").concat(child));
         }
     }
 

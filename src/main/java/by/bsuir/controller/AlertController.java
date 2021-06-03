@@ -24,10 +24,10 @@ public class AlertController {
     }
 
     public static String textDialog(String header, String content) {
-        TextInputDialog dialog = new TextInputDialog("walter");
-        dialog.setTitle("Text Input Dialog");
-        dialog.setHeaderText("Look, a Text Input Dialog");
-        dialog.setContentText("Please enter your name:");
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("FTP Client dialog");
+        dialog.setHeaderText(header);
+        dialog.setContentText(content);
 
         Optional<String> result = dialog.showAndWait();
         return result.orElse(null);

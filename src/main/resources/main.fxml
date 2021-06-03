@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
@@ -22,5 +23,6 @@
       <Button fx:id="storeDirectoryButton" layoutX="490.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStoreDirectory" text="Store directory" />
       <TextField fx:id="portField" layoutX="500.0" layoutY="13.0" prefHeight="26.0" prefWidth="122.0" promptText="Port" />
       <Button fx:id="createFolderButton" layoutX="658.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCreateFolder" text="Create folder" />
+      <ComboBox fx:id="clientModeBox" layoutX="635.0" layoutY="54.0" prefWidth="150.0" />
    </children>
 </AnchorPane>

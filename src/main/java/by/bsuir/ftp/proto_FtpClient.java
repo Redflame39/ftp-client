@@ -1,5 +1,6 @@
 package by.bsuir.ftp;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.net.PrintCommandListener;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -15,6 +16,7 @@ public class proto_FtpClient {
     private String password;
     private FTPClient ftp;
     private String workingDirectory;
+    private boolean passiveWorkMode = true;
 
     public proto_FtpClient(String server, int port, String user, String password) {
         this.server = server;
@@ -29,12 +31,16 @@ public class proto_FtpClient {
 
         ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 
-        //ftp.connect(server, port);
         ftp.connect(server, port);
         int reply = ftp.getReplyCode();
         if (!FTPReply.isPositiveCompletion(reply)) {
             ftp.disconnect();
             throw new IOException("Exception in connecting to FTP Server");
+        }
+        if (passiveWorkMode) {
+            ftp.enterLocalPassiveMode();
+        } else {
+            ftp.enterLocalActiveMode();
         }
         ftp.login(user, password);
     }
@@ -90,20 +96,15 @@ public class proto_FtpClient {
     }
 
     public void store(File toStore, String storePath) throws IOException {
-        if (!ftp.allocate(toStore.length())) {
-            throw new IOException("Not enough space on server");
-        }
         InputStream inputStream = new FileInputStream(toStore);
         OutputStream outputStream = ftp.storeFileStream(storePath + toStore.getName());
         if (Objects.isNull(outputStream)) {
             throw new IOException(ftp.getReplyString());
         }
-        int sizeBytes = 4096;
-        byte[] bytesIn = new byte[sizeBytes];
-        int read = 0;
-        while ((read = inputStream.read(bytesIn)) != -1) {
-            outputStream.write(bytesIn, 0, read);
-        }
+        /*byte[] bytesIn;
+        bytesIn = inputStream.readAllBytes();
+        outputStream.write(bytesIn);*/
+        IOUtils.copy(inputStream, outputStream);
         inputStream.close();
         outputStream.close();
         boolean completed = this.ftp.completePendingCommand();
@@ -131,12 +132,20 @@ public class proto_FtpClient {
         ftp.disconnect();
     }
 
-    public void logOut() throws IOException {
-        ftp.logout();
+    public int lastReply() {
+        return ftp.getReplyCode();
     }
 
-    public void logIn(String username, String password) throws IOException {
-        ftp.login(user, password);
+    public void setPassiveWorkMode() {
+        passiveWorkMode = true;
+    }
+
+    public void setActiveWorkMode() {
+        passiveWorkMode = false;
+    }
+
+    public boolean isPassiveWorkMode() {
+        return passiveWorkMode;
     }
 
 }
