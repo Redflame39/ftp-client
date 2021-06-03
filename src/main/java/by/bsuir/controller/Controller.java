@@ -18,18 +18,19 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPFile;
 
 import by.bsuir.ftp.*;
 
 public class Controller {
 
+    private proto_Control ftpControl;
+    private boolean connectedToServer = false;
+    private final String DEFAULT_SAVE_PATH = "C:\\Users\\" + System.getProperty("user.name") + "\\Downloads";
     private final Image DIRECTORY_ICON = new Image("/directory.png");
     private final Image FILE_ICON = new Image("/file.png");
     private final Image UNKNOWN_ICON = new Image("/unknown.png");
-
-    private proto_Control ftpControl;
-    private final String DEFAULT_SAVE_PATH = "C:\\Users\\" + System.getProperty("user.name") + "\\Downloads";
 
     @FXML
     private TextField hostField;
@@ -56,9 +57,6 @@ public class Controller {
     private Button retrieveButton;
 
     @FXML
-    private TextField storePathField;
-
-    @FXML
     private Button storeFileButton;
 
     @FXML
@@ -66,6 +64,12 @@ public class Controller {
 
     @FXML
     private Button storeDirectoryButton;
+
+    @FXML
+    private TextField portField;
+
+    @FXML
+    private Button createFolderButton;
 
     @FXML
     void initialize() {
@@ -108,40 +112,72 @@ public class Controller {
             AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
             return;
         }
+        if (connectedToServer) {
+            AlertController.showAlert("You are already connected to server", Alert.AlertType.INFORMATION);
+            return;
+        }
         ftpControl = new proto_Control(hostField.getText(),
+                Integer.parseInt(portField.getText()),
                 usernameField.getText(),
                 passwordField.getText());
-        ftpControl.connect();
-        setRemoteDirTree();
-        storePathField.setText(DEFAULT_SAVE_PATH);
+        boolean successfullyConnected = ftpControl.connect();
+        if (successfullyConnected) {
+            setRemoteDirTree();
+            connectedToServer = true;
+        } else {
+            AlertController.showAlert(
+                    "Cannot connect to server " + hostField.getText() + ":" + portField.getText(),
+                    Alert.AlertType.ERROR);
+        }
     }
 
     @FXML
     void handleDisconnect(ActionEvent event) {
-        if (ftpControl != null)
+        if (connectedToServer) {
             ftpControl.disconnect();
+            connectedToServer = false;
+            remoteDirTree.setRoot(null);
+            directoryContent.getItems().clear();
+            AlertController.showAlert("You have been successfully disconnected from server!", Alert.AlertType.INFORMATION);
+        } else {
+            AlertController.showAlert("You are not connected to server", Alert.AlertType.INFORMATION);
+        }
     }
 
     @FXML
     void handleRetrieve(ActionEvent event) {
+        if (!connectedToServer) {
+            AlertController.showAlert("You are not connected to server", Alert.AlertType.INFORMATION);
+            return;
+        }
         proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
-        if (ftpControl != null && selected != null && !selected.getName().equals("..")) {
-            if (!selected.getFile().isDirectory()) {
-                ftpControl.retrieve(selected.getFullPath(), storePathField.getText() + "/" + selected.getName());
+        if (selected != null && !selected.getName().equals("..")) {
+            if (!selected.getFile().hasPermission(FTPFile.USER_ACCESS, FTPFile.READ_PERMISSION)) {
+                AlertController.showAlert("You have no permission to retrieve this file!", Alert.AlertType.ERROR);
+                return;
             }
-            else {
+            if (!selected.getFile().isDirectory()) {
+                boolean successfully = ftpControl.retrieve(selected.getFullPath(),
+                        DEFAULT_SAVE_PATH + "/" + selected.getName());
+                if (!successfully) {
+                    AlertController.showAlert("Cannot retrieve file from server!", Alert.AlertType.ERROR);
+                }
+            } else {
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                ftpControl.retrieveDirectory(selected.getFullPath(),
-                        storePathField.getText() + "\\" + selected.getName()
+                boolean successfully = ftpControl.retrieveDirectory(selected.getFullPath(),
+                        DEFAULT_SAVE_PATH + "\\" + selected.getName()
                                 + "_" + timestamp.toString().replaceAll("[^0-9]", "") + ".zip");
+                if (!successfully) {
+                    AlertController.showAlert("Cannot retrieve directory from server!", Alert.AlertType.ERROR);
+                }
             }
         }
     }
 
     @FXML
     void handleStoreFile(ActionEvent event) {
-        if (!fieldsNotEmpty()) {
-            AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
+        if (!connectedToServer) {
+            AlertController.showAlert("You are not connected to server", Alert.AlertType.INFORMATION);
             return;
         }
         FileChooser fileChooser = new FileChooser();
@@ -158,8 +194,8 @@ public class Controller {
 
     @FXML
     void handleStoreDirectory(ActionEvent event) {
-        if (!fieldsNotEmpty()) {
-            AlertController.showAlert("Fields must not be empty", Alert.AlertType.INFORMATION);
+        if (!connectedToServer) {
+            AlertController.showAlert("You are not connected to server", Alert.AlertType.INFORMATION);
             return;
         }
         DirectoryChooser directoryChooser = new DirectoryChooser();
@@ -175,8 +211,15 @@ public class Controller {
 
     @FXML
     void handleDelete(ActionEvent event) {
+        if (!connectedToServer) {
+            AlertController.showAlert("You are not connected to server", Alert.AlertType.INFORMATION);
+            return;
+        }
         if (directoryContent.getSelectionModel().getSelectedItem() == null) {
             AlertController.showAlert("Select item to delete", Alert.AlertType.INFORMATION);
+            return;
+        }
+        if (!AlertController.confirmationAlert("Are you sure you want to delete this file?")) {
             return;
         }
         proto_RemoteFile selected = directoryContent.getSelectionModel().getSelectedItem();
@@ -202,6 +245,18 @@ public class Controller {
             }
         }
 
+    }
+
+    @FXML
+    void handleCreateFolder(ActionEvent event) {
+        if (!connectedToServer) {
+            AlertController.showAlert("You are not connected to server", Alert.AlertType.INFORMATION);
+            return;
+        }
+        String newFolderName = AlertController.textDialog("Specify the folder name", "New folder name: ");
+        ftpControl.makeDirectory(remoteDirTree.getSelectionModel().getSelectedItem().getValue() + "/" + newFolderName);
+        updateDirectoryContentList(remoteDirTree.getSelectionModel().getSelectedItem());
+        setRemoteDirTree();
     }
 
     private void setRemoteDirTree() {

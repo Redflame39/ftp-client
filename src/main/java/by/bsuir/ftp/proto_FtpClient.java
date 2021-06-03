@@ -30,7 +30,7 @@ public class proto_FtpClient {
         ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
 
         //ftp.connect(server, port);
-        ftp.connect(server);
+        ftp.connect(server, port);
         int reply = ftp.getReplyCode();
         if (!FTPReply.isPositiveCompletion(reply)) {
             ftp.disconnect();
@@ -129,6 +129,14 @@ public class proto_FtpClient {
     public void close() throws IOException {
         ftp.logout();
         ftp.disconnect();
+    }
+
+    public void logOut() throws IOException {
+        ftp.logout();
+    }
+
+    public void logIn(String username, String password) throws IOException {
+        ftp.login(user, password);
     }
 
 }

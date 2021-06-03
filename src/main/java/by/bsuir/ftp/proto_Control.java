@@ -6,6 +6,8 @@ import org.apache.commons.net.ftp.FTPFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.zip.ZipEntry;
@@ -14,15 +16,17 @@ import java.util.zip.ZipOutputStream;
 public class proto_Control {
     proto_FtpClient ftp;
 
-    public proto_Control(String host, String username, String password) {
-        ftp = new proto_FtpClient(host, 0, username, password);
+    public proto_Control(String host,int port, String username, String password) {
+        ftp = new proto_FtpClient(host, port, username, password);
     }
 
-    public void connect() {
+    public boolean connect() {
         try {
             ftp.connect();
+            return true;
         } catch (IOException e) {
             System.err.println("Cannot connect to server.");
+            return false;
         }
     }
 
@@ -55,19 +59,24 @@ public class proto_Control {
         }
     }
 
-    public void retrieve(String retrievePath, String storePath) {
+    public boolean retrieve(String retrievePath, String storePath) {
         try {
             ftp.retrieve(retrievePath, storePath);
+            return true;
         } catch (IOException e) {
-            System.err.println("Cannot retrieve file from " + retrievePath + " (" + e.getLocalizedMessage() + ")");
+            System.err.println("Cannot retrieve file " + retrievePath + " (" + e.getLocalizedMessage() + ")");
+            return false;
         }
     }
 
-    public void retrieveDirectory(String retrievePath, String storePath) {
+    public boolean retrieveDirectory(String retrievePath, String storePath) {
         try(ZipOutputStream out = new ZipOutputStream(new FileOutputStream(storePath))) {
             retrieveFilesForFolder(retrievePath, out);
+            return true;
         } catch (IOException e) {
             System.err.println("Cannot retrieve directory " + retrievePath  + " to " + storePath);
+            new File(storePath).delete();
+            return false;
         }
     }
 
@@ -79,9 +88,13 @@ public class proto_Control {
                 zipOut.closeEntry();
                 retrieveFilesForFolder(fileName + "/" + fileEntry.getName(), zipOut);
             } else {
+                if(!fileEntry.hasPermission(FTPFile.USER_ACCESS, FTPFile.READ_PERMISSION)) {
+                    throw new AccessDeniedException("Access denied to " + fileEntry.getName());
+                }
                 ZipEntry zipEntry = new ZipEntry(fileName + "/" + fileEntry.getName());
                 zipOut.putNextEntry(zipEntry);
-                zipOut.write(ftp.retrieve(fileName + "/" + fileEntry.getName()).readAllBytes());
+                InputStream dataStream = ftp.retrieve(fileName + "/" + fileEntry.getName());
+                zipOut.write(dataStream.readAllBytes());
                 zipOut.closeEntry();
             }
         }
@@ -130,6 +143,14 @@ public class proto_Control {
         } catch (IOException e) {
             System.err.println("Cannot delete directory from FTP: " + path);
             return false;
+        }
+    }
+
+    public void makeDirectory(String path) {
+        try {
+            ftp.makeDirectory(path);
+        } catch (IOException e) {
+            System.err.println("Cannot create directory " + path);
         }
     }
 }

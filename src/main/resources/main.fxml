@@ -11,15 +11,16 @@
    <children>
       <TextField fx:id="hostField" layoutX="14.0" layoutY="14.0" promptText="Host address" />
       <TextField fx:id="usernameField" layoutX="176.0" layoutY="14.0" promptText="Username" />
-      <Button fx:id="connectButton" layoutX="501.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleConnect" text="Connect" />
+      <Button fx:id="connectButton" layoutX="635.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleConnect" text="Connect" />
       <PasswordField fx:id="passwordField" layoutX="340.0" layoutY="14.0" promptText="Password" />
-      <Button fx:id="disconnectButton" layoutX="573.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleDisconnect" text="Disconnect" />
+      <Button fx:id="disconnectButton" layoutX="710.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleDisconnect" text="Disconnect" />
       <TreeView fx:id="remoteDirTree" layoutX="14.0" layoutY="100.0" prefHeight="459.0" prefWidth="300.0" />
-      <ListView fx:id="directoryContent" layoutX="340.0" layoutY="100.0" prefHeight="208.0" prefWidth="220.0" />
+      <ListView fx:id="directoryContent" layoutX="340.0" layoutY="100.0" prefHeight="208.0" prefWidth="402.0" />
       <Button fx:id="retrieveButton" layoutX="340.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleRetrieve" text="Retrieve" />
-      <TextField fx:id="storePathField" layoutX="15.0" layoutY="56.0" prefHeight="26.0" prefWidth="546.0" promptText="Path to store" />
       <Button fx:id="storeFileButton" layoutX="415.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStoreFile" text="Store file" />
       <Button fx:id="deleteButton" layoutX="597.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleDelete" text="Delete" />
       <Button fx:id="storeDirectoryButton" layoutX="490.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleStoreDirectory" text="Store directory" />
+      <TextField fx:id="portField" layoutX="500.0" layoutY="13.0" prefHeight="26.0" prefWidth="122.0" promptText="Port" />
+      <Button fx:id="createFolderButton" layoutX="658.0" layoutY="317.0" mnemonicParsing="false" onAction="#handleCreateFolder" text="Create folder" />
    </children>
 </AnchorPane>
